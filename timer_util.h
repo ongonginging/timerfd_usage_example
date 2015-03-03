@@ -9,8 +9,9 @@ typedef enum TIMER_RESULT{
 
 int util_create_timer(struct itimerspec* new_value);
 TIMER_RESULT util_update_timer(int fd, struct itimerspec* new_value);
-TIMER_RESULT util_delete_timer(int fd);
-struct itimerspec get_new_itimerspec_from_now(int sec, int nsec);
+TIMER_RESULT util_delete_timer(int& fd);
+struct itimerspec get_once_itimerspec(int sec, int nsec);
+struct itimerspec get_interval_itimerspec(int sec, int nsec);
 
 #endif //__TIMER_UTIL_H__
 

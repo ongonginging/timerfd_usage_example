@@ -28,22 +28,10 @@ static fd_set g_set;
 int listen(int* data);
 
 int main(int argc, char* argv[]){
-
-	struct timespec now;
-	struct itimerspec old_value;
-	struct itimerspec new_value;
-	int res = clock_gettime(CLOCK_REALTIME, &now);
-	if (res == -1){
-		cout<<"Failed to get clock realtime."<<endl;
-	}
-	new_value.it_value.tv_sec = now.tv_sec + 5;
-	new_value.it_value.tv_nsec = now.tv_nsec; 
-	new_value.it_interval.tv_sec = 0;
-	new_value.it_interval.tv_nsec = 0;
-
+	struct itimerspec it = get_interval_itimerspec(3, 0);
 	int fds[MAX];
 	for(int i=0; i<MAX; i++){
-		fds[i] = util_create_timer(&new_value);
+		fds[i] = util_create_timer(&it);
 		cout<<"fd = "<<fds[i]<<endl;
 	}
 	listen(fds);
@@ -61,7 +49,6 @@ int listen(int* data) {
 
     FD_ZERO(&g_set);
 	for(int i=0; i<MAX; i++){
-		cout<<"in listen fd = "<<data[i]<<endl;
 		FD_SET(data[i], &g_set);
 	}
 
@@ -79,15 +66,14 @@ int listen(int* data) {
             cout<<"select return 0."<<endl;
             break;
         default:
-            for (tmpfd=0; tmpfd<(maxfd+1); tmpfd++) {
+            for (tmpfd=0; tmpfd<(maxfd+1); tmpfd++){
                 ret = FD_ISSET(tmpfd, &set);
-                if(ret == 0) {
-                    continue;
-                } else {
-                    cout<<"active fd:"<<tmpfd;
-                }
                 do {
                     ret = read(tmpfd, (char *)&tmpdata, sizeof(long));
+					if (ret == 0 ){
+					}else{
+						cout<<"tmpfd = "<<tmpfd<<endl;
+					}
                     switch(ret)
                     {
                     case EAGAIN:
@@ -100,8 +86,8 @@ int listen(int* data) {
                     default:
                         //FD_CLR(tmpfd,&g_set);
                         cout<<"fd:data -> "<<tmpfd<<":"<<tmpdata<<endl;
-						struct itimerspec new_v = get_new_itimerspec_from_now(5, 0);
-						util_update_timer(tmpfd, &new_v);
+						//struct itimerspec new_v = get_once_itimerspec(3, 0);
+						//util_update_timer(tmpfd, &new_v);
                         break;
                     }
                 }while(ret>0);
