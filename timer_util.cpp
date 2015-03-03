@@ -67,6 +67,7 @@ struct itimerspec get_once_itimerspec(int sec, int nsec){
 	it.it_value.tv_nsec = now.tv_nsec + nsec; 
 	it.it_interval.tv_sec = 0;
 	it.it_interval.tv_nsec = 0;
+	return it;
 }
 
 
@@ -79,8 +80,9 @@ struct itimerspec get_interval_itimerspec(int sec, int nsec){
 	struct itimerspec it;
 	clock_gettime(CLOCK_REALTIME, &now);
 	it.it_value.tv_sec = now.tv_sec + sec;
-	it.it_value.tv_nsec = now.tv_sec + nsec; 
+	it.it_value.tv_nsec = now.tv_nsec + nsec; 
 	it.it_interval.tv_sec = sec;
 	it.it_interval.tv_nsec = nsec;
+	return it;
 }
 

@@ -29,6 +29,7 @@ int listen(int* data);
 
 int main(int argc, char* argv[]){
 	struct itimerspec it = get_interval_itimerspec(3, 0);
+	//struct itimerspec it = get_once_itimerspec(3, 0);
 	int fds[MAX];
 	for(int i=0; i<MAX; i++){
 		fds[i] = util_create_timer(&it);
@@ -37,7 +38,7 @@ int main(int argc, char* argv[]){
 	listen(fds);
 }
 
-int listen(int* data) {
+int listen(int* data){
 
     int ret = -1;
 
@@ -58,7 +59,6 @@ int listen(int* data) {
         ret = select(maxfd+1, &set, NULL, NULL, NULL);
 
         switch(ret){
-
         case -1:
             cout<<"select return -1."<<endl;
             break;
@@ -66,14 +66,13 @@ int listen(int* data) {
             cout<<"select return 0."<<endl;
             break;
         default:
-            for (tmpfd=0; tmpfd<(maxfd+1); tmpfd++){
+            for (tmpfd=data[0]; tmpfd<=data[MAX-1]; tmpfd++){
                 ret = FD_ISSET(tmpfd, &set);
+				if(ret == 0){
+					continue;
+				}
                 do {
                     ret = read(tmpfd, (char *)&tmpdata, sizeof(long));
-					if (ret == 0 ){
-					}else{
-						cout<<"tmpfd = "<<tmpfd<<endl;
-					}
                     switch(ret)
                     {
                     case EAGAIN:
@@ -84,10 +83,8 @@ int listen(int* data) {
                     case 0:
                         break;
                     default:
-                        //FD_CLR(tmpfd,&g_set);
+                        FD_CLR(tmpfd, &g_set);
                         cout<<"fd:data -> "<<tmpfd<<":"<<tmpdata<<endl;
-						//struct itimerspec new_v = get_once_itimerspec(3, 0);
-						//util_update_timer(tmpfd, &new_v);
                         break;
                     }
                 }while(ret>0);
@@ -97,3 +94,4 @@ int listen(int* data) {
     }
     return 0;
 }
+
